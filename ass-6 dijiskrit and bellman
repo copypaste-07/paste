@@ -1,0 +1,108 @@
+#Greedy and dynamic approach:
+#a) Use the map of the area around the college as the graph. Identify the prominent
+#landmarks as nodes and find minimum distance to various landmarks from the
+#college as the source. Represent this graph using an adjacency matrix. Find the
+#shortest path using Dijkstra’s algorithm.
+#b) Write a program to implement the Bellman-Ford algorithm to find the shortest
+#path from a single source to all other nodes in a graph with negative edge weights.
+#Verify its results for a sample graph and compare it with Dijkstra’s algorithm.
+#code
+#include <iostream> 
+using namespace std; 
+const int MAX = 100; 
+const int INF = 1e9; 
+// Graph adjacency matrix 
+int graph[MAX][MAX]; 
+// Dijkstra's Algorithm (Greedy Approach) 
+void dijkstra(int V, int src) { 
+bool visited[MAX] = {false}; 
+int dist[MAX]; 
+for (int i = 0; i < V; i++) 
+dist[i] = INF; 
+dist[src] = 0; 
+for (int count = 0; count < V - 1; count++) { 
+int u = -1, minDist = INF; 
+// Find the vertex with the minimum distance 
+for (int i = 0; i < V; i++) { 
+if (!visited[i] && dist[i] < minDist) { 
+minDist = dist[i]; 
+u = i; 
+} 
+} 
+if (u == -1) break; // No more reachable vertices 
+visited[u] = true; 
+// Update distances 
+for (int v = 0; v < V; v++) { 
+if (!visited[v] && graph[u][v] && dist[u] + graph[u][v] < dist[v]) { 
+dist[v] = dist[u] + graph[u][v]; 
+} 
+} 
+} 
+cout << "Dijkstra's Algorithm (from source " << src << "):\n"; 
+for (int i = 0; i < V; i++) 
+cout << "Distance to " << i << ": " << (dist[i] == INF ? -1 : dist[i]) << endl; 
+} 
+// Bellman-Ford Algorithm (Dynamic Approach) 
+void bellmanFord(int V, int E, int edges[][3], int src) { 
+int dist[MAX]; 
+// Initialize distances 
+for (int i = 0; i < V; i++) 
+dist[i] = INF; 
+dist[src] = 0; 
+// Relax all edges (V-1) times 
+for (int i = 0; i < V - 1; i++) { 
+for (int j = 0; j < E; j++) { 
+int u = edges[j][0]; 
+int v = edges[j][1]; 
+int weight = edges[j][2]; 
+// Relaxation condition 
+if (dist[u] != INF && dist[u] + weight < dist[v]) { 
+dist[v] = dist[u] + weight; 
+} 
+} 
+} 
+// Print the distances before checking for a negative cycle 
+cout << "\nBellman-Ford Algorithm (from source " << src << "):\n"; 
+for (int i = 0; i < V; i++) { 
+if (dist[i] == INF) 
+cout << "Distance to " << i << ": INF (unreachable)\n"; 
+else 
+cout << "Distance to " << i << ": " << dist[i] << endl; 
+} 
+// Check for negative weight cycles 
+for (int i = 0; i < E; i++) { 
+int u = edges[i][0]; 
+int v = edges[i][1]; 
+int weight = edges[i][2]; 
+if (dist[u] != INF && dist[u] + weight < dist[v]) { 
+cout << "Graph contains a negative weight cycle!\n"; 
+return; 
+} 
+} 
+} 
+int main() { 
+int V, E, src; 
+cout << "Enter number of landmarks: "; 
+cin >> V; 
+cout << "Enter number of roads: "; 
+cin >> E; 
+int edges[MAX][3]; 
+// Initialize adjacency matrix 
+for (int i = 0; i < MAX; i++) 
+for (int j = 0; j < MAX; j++) 
+graph[i][j] = (i == j) ? 0 : INF; 
+cout << "Enter roads (source destination weight):\n"; 
+for (int i = 0; i < E; i++) { 
+int u, v, weight; 
+cin >> u >> v >> weight; 
+edges[i][0] = u; 
+edges[i][1] = v; 
+edges[i][2] = weight; 
+graph[u][v] = weight; 
+} 
+cout << "Enter source landmark: "; 
+cin >> src; 
+dijkstra(V, src); 
+bellmanFord(V, E, edges, src); 
+return 0; 
+}
