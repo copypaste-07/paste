@@ -1,0 +1,215 @@
+
+
+#Greedy approach:
+#A business house has several offices in different countries; they want to lease phone
+#lines to connect them with each other and the phone company charges different rent to
+#connect different pairs of cities. Business house wants to connect all its offices with a
+#minimum total cost. Represent using appropriate data structure.
+#Apply Prim’s and Kruskal’s algorithm to find the minimum total cost.
+
+
+#PRIMS ALGORITHM:
+
+#CODE:
+#include <bits/stdc++.h>
+using namespace std;
+
+vector<pair<pair<int, int>, int>> calculatePrimsMST(int n, int m, vector<pair<pair<int, int>, int>> &g)
+{
+    // Creating adjacency list
+    unordered_map<int, list<pair<int, int>>> adj;
+    for (int i = 0; i < g.size(); i++)
+    {
+        int u = g[i].first.first;
+        int v = g[i].first.second;
+        int w = g[i].second;
+        adj[u].push_back(make_pair(v, w));
+        adj[v].push_back(make_pair(u, w));
+    }
+
+    // Initializing key, visited, and parent arrays
+    vector<int> key(n + 1, INT_MAX);
+    vector<bool> visited(n + 1, false);
+    vector<int> parent(n + 1, -1);
+
+    key[1] = 0;
+
+    // Prim's algorithm
+    for (int i = 1; i < n; i++)
+    {
+        int mini = INT_MAX, u = -1;
+
+        // Find the minimum key vertex
+        for (int v = 1; v <= n; v++)
+        {
+            if (!visited[v] && key[v] < mini)
+            {
+                mini = key[v];
+                u = v;
+            }
+        }
+
+        if (u == -1) break; // If no valid vertex is found, stop
+
+        visited[u] = true;
+
+        // Update keys of adjacent nodes
+        for (auto it : adj[u])
+        {
+            int v = it.first;
+            int w = it.second;
+            if (!visited[v] && key[v] > w)
+            {
+                parent[v] = u;
+                key[v] = w;
+            }
+        }
+    }
+
+    // Store the MST result
+    vector<pair<pair<int, int>, int>> result;
+    for (int i = 2; i <= n; i++)
+    {
+        if (parent[i] != -1) // Ensure valid edges
+            result.push_back({{parent[i], i}, key[i]});
+    }
+
+    return result;
+}
+
+int main()
+{
+    int n, m;
+    cout << "Enter number of nodes and edges: ";
+    cin >> n >> m;
+
+    vector<pair<pair<int, int>, int>> edges;
+
+    cout << "Enter edges (u v weight):\n";
+    for (int i = 0; i < m; i++)
+    {
+        int u, v, w;
+        cin >> u >> v >> w;
+        edges.push_back({{u, v}, w});
+    }
+
+    vector<pair<pair<int, int>, int>> mst = calculatePrimsMST(n, m, edges);
+
+    cout << "\nMinimum Spanning Tree:\n";
+    for (auto edge : mst)
+    {
+        cout << edge.first.first << " - " << edge.first.second << " : " << edge.second << endl;
+    }
+    // input 
+    
+    return 0;
+}
+#KRUSKAL ALGORITHM:
+
+#CODE:
+
+#include <iostream>
+#include <vector>
+using namespace std;
+#include <algorithm>
+bool compare(vector<int> &a, vector<int> &b)
+{
+    return a[2] < b[2];
+}
+void makeSet(vector<int> &parent, vector<int> &rank, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        parent[i] = i;
+        rank[i] = 0;
+    }
+}
+int findParent(vector<int> &parent, int node)
+{
+    // base case
+    if (parent[node] == node)
+    {
+        return node;
+    }
+    return parent[node] = findParent(parent, parent[node]);
+}
+void unionSet(int u, int v, vector<int> &parent, vector<int> &rank)
+{
+    u = findParent(parent, u);
+    v = findParent(parent, v);
+    if (rank[u] < rank[v])
+    {
+        parent[u] = v;
+    }
+    else if (rank[u] > rank[v])
+    {
+        parent[v] = u;
+    }
+    else
+    {
+        parent[v] = u;
+        cout<<v<<parent[v]<<endl;
+        rank[u]++;
+    }
+}
+int minimumSpanningTree(vector<vector<int>> &edges, int n)
+{
+    sort(edges.begin(), edges.end(), compare);
+
+    for(int i=0;i<edges.size();i++){
+        for(int j=0;j<edges[i].size();j++){
+            cout<<edges[i][j]<<" ";
+        }
+        cout<<endl;
+    }
+
+
+    vector<int> parent(n);
+    vector<int> rank(n);
+    makeSet(parent, rank, n);
+    int minWeight = 0;
+    for (int i = 0; i < edges.size(); i++)
+    {
+        int u = findParent(parent, edges[i][0]);
+        int v = findParent(parent, edges[i][1]);
+        int w = edges[i][2];
+
+        if (u != v)
+        {
+            minWeight += w;
+            unionSet(u, v, parent, rank);
+        }
+    }
+    return minWeight;
+}
+int main()
+{
+    // Example Usage:
+     int n; // Number of nodes
+
+    int m; // Number of edges
+
+    cout << "Enter the number of nodes and edges:" << endl;
+
+    cin >> n >> m;
+
+
+    vector<vector<int>> edges; // To store the edges
+
+    cout << "Enter the edges (u v w):" << endl;
+
+    for (int i = 0; i < m; i++) {
+
+        int u, v, w;
+
+        cin >> u >> v >> w; // Input for each edge
+
+        edges.push_back({u, v, w}); // Add edge to the list
+
+    }
+    cout << "Minimum Spanning Tree Weight: " << minimumSpanningTree(edges, n) << endl;
+    return 0;
+}
+
+
+
