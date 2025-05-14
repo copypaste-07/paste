@@ -1,0 +1,72 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+
+// Define Student structure
+struct Student {
+    int id;
+    float grade;
+
+    // For max-heap: higher grade = higher priority
+    bool operator<(const Student& other) const {
+        return grade < other.grade;
+    }
+};
+
+// Function to input student data
+void inputStudents(vector<Student>& students, int n) {
+    for (int i = 0; i < n; ++i) {
+        Student s;
+        cout << "Enter ID for student " << i + 1 << ": ";
+        cin >> s.id;
+        cout << "Enter Grade for student " << i + 1 << ": ";
+        cin >> s.grade;
+        students.push_back(s);
+    }
+}
+
+// Function to sort students by ascending grade
+void sortByGradeAscending(vector<Student>& students) {
+    sort(students.begin(), students.end(), [](const Student& a, const Student& b) {
+        return a.grade < b.grade;
+    });
+}
+
+// Function to display students
+void displayStudents(const vector<Student>& students) {
+    cout << "\nStudents sorted by grade (ascending):\n";
+    for (const auto& s : students) {
+        cout << "ID: " << s.id << ", Grade: " << s.grade << "\n";
+    }
+}
+
+int main() {
+    int n;
+    cout << "Enter number of students: ";
+    cin >> n;
+
+    vector<Student> students;
+    inputStudents(students, n);
+
+    // Max-Heap for topper selection
+    priority_queue<Student> maxHeap;
+    for (const auto& s : students) {
+        maxHeap.push(s);
+    }
+
+    // Display topper
+    if (!maxHeap.empty()) {
+        Student topper = maxHeap.top();
+        cout << "\nTopper selected for internship:\n";
+        cout << "ID: " << topper.id << ", Grade: " << topper.grade << "\n";
+    }
+
+    // Sort and display in ascending order of grade
+    sortByGradeAscending(students);
+    displayStudents(students);
+
+    return 0;
+}
