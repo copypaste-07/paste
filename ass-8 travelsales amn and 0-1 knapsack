@@ -1,0 +1,160 @@
+#Travelling Salesman Problem (TSP) using Branch and Bound
+#include <iostream> 
+using namespace std; 
+#define MAX 10 
+int adj[MAX][MAX]; 
+int finalPath[MAX]; 
+int visited[MAX]; 
+int n, minCost = 9999; 
+void copyPath(int path[]) { 
+for (int i = 0; i < n; i++) 
+finalPath[i] = path[i]; 
+finalPath[n] = path[0]; 
+} 
+int min1(int i) { 
+int minVal = 9999; 
+for (int j = 0; j < n; j++) { 
+if (i != j && adj[i][j] < minVal) 
+minVal = adj[i][j]; 
+} 
+return minVal; 
+} 
+int secondMin(int i) { 
+int first = 9999, second = 9999; 
+for (int j = 0; j < n; j++) { 
+if (i == j) continue; 
+if (adj[i][j] <= first) { 
+second = first; 
+first = adj[i][j]; 
+} else if (adj[i][j] < second) { 
+second = adj[i][j]; 
+} 
+} 
+return second; 
+} 
+void tspRec(int level, int path[], int currBound, int currCost) { 
+if (level == n) { 
+if (adj[path[level - 1]][path[0]] != 0) { 
+int totalCost = currCost + adj[path[level - 1]][path[0]]; 
+if (totalCost < minCost) { 
+minCost = totalCost; 
+copyPath(path); 
+} 
+} 
+return; 
+} 
+for (int i = 0; i < n; i++) { 
+if (!visited[i] && adj[path[level - 1]][i]) { 
+int tempBound = currBound; 
+currCost += adj[path[level - 1]][i]; 
+if (level == 1) 
+currBound -= (min1(path[level - 1]) + min1(i)) / 2; 
+else 
+currBound -= (secondMin(path[level - 1]) + min1(i)) / 2; 
+if (currCost + currBound < minCost) { 
+path[level] = i; 
+visited[i] = 1; 
+tspRec(level + 1, path, currBound, currCost); 
+} 
+currCost -= adj[path[level - 1]][i]; 
+currBound = tempBound; 
+for (int j = level; j < n; j++) visited[path[j]] = 0; 
+} 
+} 
+} 
+void tspBranchBound() { 
+cout << "\n--- Travelling Salesman Problem (Branch and Bound) ---\n"; 
+cout << "Enter number of cities: "; 
+cin >> n; 
+cout << "Enter cost matrix:\n"; 
+for (int i = 0; i < n; i++) 
+for (int j = 0; j < n; j++) 
+cin >> adj[i][j]; 
+int path[MAX] = {0}; 
+for (int i = 0; i < MAX; i++) visited[i] = 0; 
+visited[0] = 1; 
+int bound = 0; 
+for (int i = 0; i < n; i++) 
+bound += (min1(i) + secondMin(i)); 
+bound = (bound % 2) ? (bound / 2 + 1) : (bound / 2); 
+tspRec(1, path, bound, 0); 
+cout << "Minimum cost: " << minCost << "\nPath: "; 
+for (int i = 0; i <= n; i++) 
+cout << finalPath[i] << " "; 
+cout << "\n"; 
+} 
+int main() { 
+tspBranchBound(); 
+return 0; 
+}
+
+#Implement branch and bound for the 0/1 Knapsack problem.
+
+#include <iostream> 
+using namespace std; 
+#define MAX 20 
+struct Item { 
+int value; 
+int weight; 
+float ratio; 
+}; 
+void sortItems(Item items[], int n) { 
+for (int i = 0; i < n-1; i++) 
+for (int j = 0; j < n-i-1; j++) 
+if (items[j].ratio < items[j+1].ratio) { 
+Item temp = items[j]; 
+items[j] = items[j+1]; 
+items[j+1] = temp; 
+} 
+} 
+float bound(int level, int weight, int value, int capacity, Item items[], int n) { 
+float result = value; 
+int totalWeight = weight; 
+for (int i = level; i < n; i++) { 
+if (totalWeight + items[i].weight <= capacity) { 
+totalWeight += items[i].weight; 
+result += items[i].value; 
+} else { 
+int remain = capacity - totalWeight; 
+result += items[i].value * (remain / (float)items[i].weight); 
+break; 
+} 
+} 
+return result; 
+} 
+int maxProfit = 0; 
+void knapsackBB(int level, int weight, int value, int capacity, Item items[], int n) { 
+if (weight > capacity) 
+return; 
+if (value > maxProfit) 
+maxProfit = value; 
+float b = bound(level, weight, value, capacity, items, n); 
+if (b <= maxProfit) 
+return; 
+if (level < n) { 
+knapsackBB(level + 1, weight + items[level].weight, value + items[level].value, capacity, items, n); 
+knapsackBB(level + 1, weight, value, capacity, items, n); 
+} 
+} 
+void solveKnapsack() { 
+cout << "\n--- 0/1 Knapsack Problem (Branch and Bound) ---\n"; 
+int n, capacity; 
+Item items[MAX]; 
+cout << "Enter number of items: "; 
+cin >> n; 
+cout << "Enter capacity of knapsack: "; 
+cin >> capacity; 
+cout << "Enter value and weight of each item:\n"; 
+for (int i = 0; i < n; i++) { 
+cin >> items[i].value >> items[i].weight; 
+items[i].ratio = (float)items[i].value / items[i].weight; 
+} 
+sortItems(items, n); 
+maxProfit = 0; 
+knapsackBB(0, 0, 0, capacity, items, n); 
+cout << "Maximum profit: " << maxProfit << "\n"; 
+} 
+int main() { 
+solveKnapsack(); 
+return 0; 
+}
